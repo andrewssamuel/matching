@@ -1,37 +1,26 @@
-import sys
-import re
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+ 
 
-class printHello:
-    def print_hello(self):
-        return "Hello, world"
-
-  
-    def main_test(self):
-        print("testing----")
-        myObj = printHello()
-        print(myObj)
-        func = getattr(myObj,"print_hello")
-        print(func())
 
 
 def main():
-    title = "Pacific Rim: Uprising"
-    #title = re.sub(r':', '', title)
-
-    obj = re.match(r':',title)
-    if obj:
-        print("matched")
-
-    line = "Cats are smarter than dogs";
-
-    matchObj = re.search( r'd', line, re.M|re.I)
-    if matchObj:
-        print("match --> matchObj.group() : ", matchObj.group())    
-
-    print(title)
-
-    #obj = printHello()
-    #obj.main_test()
+    example_sent = "the purge 3"
+    
+    stop_words = set(stopwords.words('english'))
+    
+    word_tokens = word_tokenize(example_sent)
+    
+    filtered_sentence = [w for w in word_tokens if not w in stop_words]
+    
+    filtered_sentence = []
+    
+    for w in word_tokens:
+        if w not in stop_words:
+            filtered_sentence.append(w)
+    
+    print(word_tokens)
+    print(filtered_sentence)
 
 if __name__ == '__main__':
     main()

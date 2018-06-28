@@ -24,13 +24,14 @@ def query_title_matching_records():
         dbconfig = read_db_config()
         conn = MySQLConnection(**dbconfig)
         cursor = conn.cursor()
-        cursor.execute("select * from TMTesting where SourceLookup like '%magic_id%'")
+        cursor.execute("select sourceid,sourcetitlename,sourcereleasedate,year(sourcereleasedate) as releaseyear from TMTesting where SourceLookup like '%magic_id%'")
         magic_titles = list()
         for b in cursor:
             c = dict()
-            c['movie_id'] = b[3]
-            c['movie_name'] = b[4]
-            c['release_date'] = b[5]
+            c['movie_id'] = b[0]
+            c['movie_name'] = b[1]
+            c['release_date'] = b[2]
+            c['release_year'] = b[3]
             magic_titles.append(c)
     except Error as e:
         print(e)
@@ -82,12 +83,15 @@ def fetch_titles_for_fuzzy_match(sourcelookup):
         dbconfig = read_db_config()
         conn = MySQLConnection(**dbconfig)
         cursor = conn.cursor()
-        cursor.execute("select * from TMTesting where SourceLookup='magic_id'and magicid not in (select magicid from TMTesting where SourceLookup='"+sourcelookup+"') order by magicid")
+        query = "select sourceid,sourcetitlename,sourcereleasedate,year(sourcereleasedate) as releaseyear from TMTesting where SourceLookup='magic_id'and magicid not in (select magicid from TMTesting where SourceLookup='"+sourcelookup+"') order by magicid"
+        print(query)
+        cursor.execute(query)
         for b in cursor:
             c = dict()
-            c['movie_id'] = b[3]
-            c['movie_name'] = b[4]
-            c['release_date'] = b[5]
+            c['movie_id'] = b[0]
+            c['movie_name'] = b[1]
+            c['release_date'] = b[2]
+            c['release_year'] = b[3]
             titles_for_fuzzy.append(c)
     except Error as e:
         print(e)
@@ -99,7 +103,8 @@ def fetch_titles_for_fuzzy_match(sourcelookup):
 
 def insert_matched_title(source_name, stage,es_source, magic_title, confident):
     title = es_source['_source']
-    hashobj = hashlib.sha256(title['srcid'].encode('utf-8'))
+    hash_value = source_name+"_"+title['srcid']
+    hashobj = hashlib.sha256(hash_value.encode('utf-8'))
     val_hex = hashobj.hexdigest()
    
     try:
